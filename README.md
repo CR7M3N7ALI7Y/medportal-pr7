@@ -66,15 +66,3 @@ MedPortal/
 
 Открыть `index.html` в браузере. Для эмуляции экрана 390×844 — DevTools → Toggle device toolbar → iPhone 12 Pro (390×844) или аналогичное устройство.
 
-## Git: минимальный workflow
-
-```bash
-git init
-git add .
-git commit -m "feat: начальная структура MedPortal (commit 1 — начало)"
-# ...работа над страницами...
-git add .
-git commit -m "feat: завершены все страницы и стили (commit 2 — финал)"
-```
-
-Минимум 2 коммита — начало и завершение работы, как требует задание.
