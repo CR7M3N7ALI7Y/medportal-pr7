@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MedPortal — Заявка на приём</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" type="image/png" href="img/icons/heartbeat.png">
+</head>
+<body data-guard="auth">
+  <div class="phone">
+
+    <!-- Шапка -->
+    <header class="app-header">
+      <a href="profile.html" style="color:#fff;text-decoration:none;font-size:13px;display:inline-flex;align-items:center;gap:4px;margin-bottom:8px">
+        <img src="img/icons/close.png" alt="" style="width:14px;height:14px;filter:brightness(0) invert(1)"> Назад
+      </a>
+      <div class="brand">
+        <div class="brand-logo"><img src="img/icons/heartbeat.png" alt=""></div>
+        <div>
+          <div class="brand-name">MedPortal</div>
+          <div class="brand-tag">Запись на приём</div>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-main">
+
+      <section class="card">
+        <h2>Новая заявка</h2>
+        <p class="card-subtitle">Выберите специальность, врача и филиал</p>
+
+        <form id="appForm" novalidate>
+
+          <!-- Шаг 1 — Специальность -->
+          <div class="field">
+            <div class="cascade-step"><span class="num">1</span> Выберите специальность</div>
+            <select id="specialty" required>
+              <option value="">— выберите —</option>
+            </select>
+            <span class="error" id="specialtyError"></span>
+          </div>
+
+          <!-- Шаг 2 — Врач -->
+          <div class="field">
+            <div class="cascade-step"><span class="num">2</span> Выберите врача</div>
+            <select id="doctor" required disabled>
+              <option value="">— сначала специальность —</option>
+            </select>
+            <span class="error" id="doctorError"></span>
+          </div>
+
+          <!-- Шаг 3 — Филиал -->
+          <div class="field">
+            <div class="cascade-step"><span class="num">3</span> Выберите филиал</div>
+            <select id="branch" required disabled>
+              <option value="">— сначала врача —</option>
+            </select>
+            <span class="error" id="branchError"></span>
+          </div>
+
+          <!-- Дата приёма -->
+          <div class="field">
+            <label for="appdate">Желаемая дата приёма <span class="req">*</span></label>
+            <input type="date" id="appdate" name="appdate" required>
+            <span class="error" id="appdateError"></span>
+          </div>
+
+          <!-- Время -->
+          <div class="field">
+            <label for="apptime">Желаемое время <span class="req">*</span></label>
+            <select id="apptime" required disabled>
+              <option value="">— сначала дату —</option>
+            </select>
+            <span class="hint">Доступные слоты появляются после выбора даты</span>
+            <span class="error" id="apptimeError"></span>
+          </div>
+
+          <!-- Комментарий -->
+          <div class="field">
+            <label for="note">Комментарий (необязательно)</label>
+            <textarea id="note" rows="3" maxlength="500" placeholder="Опишите симптомы или пожелания"></textarea>
+          </div>
+
+          <!-- Согласие -->
+          <div class="field">
+            <label style="display:flex;align-items:flex-start;gap:8px;font-weight:500">
+              <input type="checkbox" id="consent" required style="width:auto;margin-top:3px">
+              <span class="text-sm">Я согласен на обработку персональных данных</span>
+            </label>
+            <span class="error" id="consentError"></span>
+          </div>
+
+          <button type="submit" class="btn btn-primary mt-8">Отправить заявку</button>
+        </form>
+      </section>
+
+      <!-- Предпросмотр заявки -->
+      <section class="card hide" id="summaryCard" style="background:var(--primary-light);border-color:transparent">
+        <h3 style="color:var(--primary-dark);margin-bottom:10px">Заявка сформирована</h3>
+        <div id="summaryBody" style="font-size:13px;line-height:1.7"></div>
+        <a href="profile.html" class="btn btn-secondary btn-sm mt-12" style="margin-top:10px;width:100%">Перейти в личный кабинет</a>
+      </section>
+
+    </main>
+
+    <!-- Нижняя навигация -->
+    <nav class="tabbar">
+      <a href="index.html"><img src="img/icons/home.png" alt=""><span>Главная</span></a>
+      <a href="application.html" class="active"><img src="img/icons/add.png" alt=""><span>Запись</span></a>
+      <a href="profile.html"><img src="img/icons/user.png" alt=""><span>Кабинет</span></a>
+      <a href="admin.html"><img src="img/icons/filter.png" alt=""><span>Админ</span></a>
+    </nav>
+  </div>
+
+  <script src="js/validation.js"></script>
+  <script>
+  (function(){
+    'use strict';
+
+    const DB = window.MedPortal.DB;
+
+    function fillSelect(sel, items, placeholder) {
+      sel.innerHTML = '<option value="">' + placeholder + '</option>';
+      items.forEach(it => {
+        const o = document.createElement('option');
+        o.value = it.id; o.textContent = it.title || it.name;
+        sel.appendChild(o);
+      });
+    }
+
+    function fmtDate(iso) {
+      const [y, m, d] = iso.split('-');
+      return d + '.' + m + '.' + y;
+    }
+
+    function nextDays(n) {
+      const arr = [];
+      const today = new Date();
+      for (let i = 1; i <= n; i++) {
+        const d = new Date(today.getTime() + i * 86400000);
+        arr.push(d.toISOString().slice(0, 10));
+      }
+      return arr;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const selSpec = document.getElementById('specialty');
+      const selDoc  = document.getElementById('doctor');
+      const selBr   = document.getElementById('branch');
+      const inpDate = document.getElementById('appdate');
+      const selTime = document.getElementById('apptime');
+
+      // Минимальная дата — завтра
+      const today = new Date();
+      const tomorrow = new Date(today.getTime() + 86400000).toISOString().slice(0, 10);
+      inpDate.min = tomorrow;
+
+      // Заполняем специальности
+      fillSelect(selSpec, DB.specialties, '— выберите —');
+
+      // Каскад: специальность → врачи
+      selSpec.addEventListener('change', () => {
+        const sp = selSpec.value;
+        clearError('specialty');
+        if (!sp) { selDoc.disabled = true; selDoc.innerHTML = '<option value="">— сначала специальность —</option>'; return; }
+        const docs = DB.doctors.filter(d => d.specialty === sp);
+        fillSelect(selDoc, docs.map(d => ({ id: d.id, title: d.name })), '— выберите врача —');
+        selDoc.disabled = false;
+        // Сброс зависимых
+        selBr.disabled = true; selBr.innerHTML = '<option value="">— сначала врача —</option>';
+        selBr.value = '';
+      });
+
+      // Каскад: врач → филиал
+      selDoc.addEventListener('change', () => {
+        const docId = selDoc.value;
+        clearError('doctor');
+        if (!docId) return;
+        const doc = DB.doctors.find(d => d.id === docId);
+        if (!doc) return;
+        // Филиал берётся из данных врача (медицинская практика обычно одна),
+        // но показываем все доступные филиалы сети, чтобы пользователь мог сравнить
+        const branches = DB.branches;
+        fillSelect(selBr, branches, '— выберите филиал —');
+        selBr.value = doc.branch; // рекомендуем филиал врача
+        selBr.disabled = false;
+      });
+
+      // Дата → временные слоты
+      inpDate.addEventListener('change', () => {
+        clearError('appdate');
+        if (!inpDate.value) return;
+        const slots = ['09:00','10:00','10:30','11:00','12:00','14:00','15:30','16:00','17:00'];
+        // Псевдо-рандомный набор свободных слотов (детерминированный по дате)
+        const seed = inpDate.value.split('-').reduce((a, b) => a + parseInt(b, 10), 0);
+        const free = slots.filter((s, i) => (seed + i) % 3 !== 0);
+        if (!free.length) free.push('09:00');
+        selTime.innerHTML = '<option value="">— выберите время —</option>';
+        free.forEach(t => {
+          const o = document.createElement('option');
+          o.value = t; o.textContent = t;
+          selTime.appendChild(o);
+        });
+        selTime.disabled = false;
+      });
+
+      function showError(id, msg) {
+        const el = document.getElementById(id);
+        const err = document.getElementById(id + 'Error');
+        if (el) el.classList.add('invalid');
+        if (err) err.textContent = msg;
+      }
+      function clearError(id) {
+        const el = document.getElementById(id);
+        const err = document.getElementById(id + 'Error');
+        if (el) el.classList.remove('invalid');
+        if (err) err.textContent = '';
+      }
+      function clearAll() {
+        ['specialty','doctor','branch','appdate','apptime','consent'].forEach(clearError);
+      }
+
+      // Сабмит
+      document.getElementById('appForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        clearAll();
+        let valid = true;
+
+        if (!selSpec.value) { showError('specialty', 'Выберите специальность'); valid = false; }
+        if (!selDoc.value)  { showError('doctor', 'Выберите врача'); valid = false; }
+        if (!selBr.value)   { showError('branch', 'Выберите филиал'); valid = false; }
+        if (!inpDate.value) { showError('appdate', 'Укажите желаемую дату'); valid = false; }
+        else if (inpDate.value < tomorrow) { showError('appdate', 'Дата должна быть не раньше завтра'); valid = false; }
+        if (!selTime.value) { showError('apptime', 'Выберите время'); valid = false; }
+        if (!document.getElementById('consent').checked) { showError('consent', 'Необходимо согласие'); valid = false; }
+
+        if (!valid) { window.MedPortal.toast('Проверьте заполнение формы', 'error'); return; }
+
+        // Сохраняем заявку в localStorage (для админ-панели)
+        const apps = JSON.parse(localStorage.getItem('medportal_apps') || '[]');
+        const doc = DB.doctors.find(d => d.id === selDoc.value);
+        const id = 'A-' + (1000 + apps.length + 9);
+        apps.push({
+          id, patient: (window.MedPortal.getSession()||{}).fio || 'Пациент',
+          doctor: doc.id, specialty: doc.specialty, branch: selBr.value,
+          date: inpDate.value, time: selTime.value,
+          status: 'waiting', note: document.getElementById('note').value.trim()
+        });
+        localStorage.setItem('medportal_apps', JSON.stringify(apps));
+
+        // Предпросмотр
+        const summary = document.getElementById('summaryBody');
+        summary.innerHTML =
+          `<div><b>Заявка №:</b> ${id}</div>` +
+          `<div><b>Специальность:</b> ${DB.specialties.find(s=>s.id===selSpec.value).title}</div>` +
+          `<div><b>Врач:</b> ${doc.name}</div>` +
+          `<div><b>Филиал:</b> ${DB.branches.find(b=>b.id===selBr.value).title}</div>` +
+          `<div><b>Дата:</b> ${fmtDate(inpDate.value)} в ${selTime.value}</div>`;
+        document.getElementById('summaryCard').classList.remove('hide');
+        window.MedPortal.toast('Заявка отправлена', 'success');
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      });
+
+      // Очистка ошибок при изменении
+      [selSpec, selDoc, selBr, inpDate, selTime].forEach(el => {
+        el.addEventListener('input', () => clearError(el.id));
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

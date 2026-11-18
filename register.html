@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MedPortal — Регистрация</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" type="image/png" href="img/icons/heartbeat.png">
+</head>
+<body>
+  <div class="phone">
+
+    <!-- Шапка -->
+    <header class="app-header">
+      <a href="index.html" style="color:#fff;text-decoration:none;font-size:13px;display:inline-flex;align-items:center;gap:4px;margin-bottom:8px">
+        <img src="img/icons/close.png" alt="" style="width:14px;height:14px;filter:brightness(0) invert(1)"> На главную
+      </a>
+      <div class="brand">
+        <div class="brand-logo"><img src="img/icons/heartbeat.png" alt=""></div>
+        <div>
+          <div class="brand-name">MedPortal</div>
+          <div class="brand-tag">Создание учётной записи</div>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-main">
+
+      <section class="card">
+        <h2>Регистрация</h2>
+        <p class="card-subtitle">Заполните данные для записи к врачу</p>
+
+        <form id="regForm" novalidate>
+
+          <div class="field">
+            <label for="fio">ФИО <span class="req">*</span></label>
+            <input type="text" id="fio" name="fio" placeholder="Иванов Иван Иванович" autocomplete="name">
+            <span class="error" id="fioError"></span>
+          </div>
+
+          <div class="field">
+            <label for="snils">СНИЛС <span class="req">*</span></label>
+            <input type="text" id="snils" name="snils" placeholder="123-456-789 00" inputmode="numeric" maxlength="14">
+            <span class="hint">Формат: 123-456-789 00</span>
+            <span class="error" id="snilsError"></span>
+          </div>
+
+          <div class="field">
+            <label for="birthdate">Дата рождения <span class="req">*</span></label>
+            <input type="date" id="birthdate" name="birthdate" max="2026-11-18">
+            <span class="error" id="birthdateError"></span>
+          </div>
+
+          <div class="field">
+            <label for="email">Email (логин) <span class="req">*</span></label>
+            <input type="email" id="email" name="email" placeholder="you@example.ru" autocomplete="email">
+            <span class="error" id="emailError"></span>
+          </div>
+
+          <div class="field">
+            <label for="password">Пароль <span class="req">*</span></label>
+            <input type="password" id="password" name="password" placeholder="Минимум 6 символов" autocomplete="new-password">
+            <span class="hint">Буквы и цифры, не менее 6 символов</span>
+            <span class="error" id="passwordError"></span>
+          </div>
+
+          <div class="field">
+            <label for="confirm">Повторите пароль <span class="req">*</span></label>
+            <input type="password" id="confirm" name="confirm" placeholder="Повтор пароля" autocomplete="new-password">
+            <span class="error" id="confirmError"></span>
+          </div>
+
+          <button type="submit" class="btn btn-primary mt-8">Зарегистрироваться</button>
+        </form>
+
+        <div class="form-footer mt-12">
+          Уже есть аккаунт? <a href="login.html" class="link">Войти</a>
+        </div>
+      </section>
+
+      <div class="card" style="background:var(--primary-light);border-color:transparent">
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <img src="img/icons/check.png" alt="" style="width:20px;height:20px">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--primary-dark)">Ваши данные надёжно защищены</div>
+            <div class="text-sm muted mt-8" style="margin-top:4px">Логин формируется из email. Проверка уникальности — через localStorage.</div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+  <script src="js/validation.js"></script>
+</body>
+</html>
